@@ -1,0 +1,21 @@
+h1  {
+    font-size: 50px;
+    color: chocolate;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.alert {
+    color: #e76e86;
+
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    opacity: 80%;
+    background-color: azure;
+}
