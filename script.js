@@ -1,53 +1,77 @@
-const listWrapper = document.querySelector(".list");
-const alert = document.querySelector(".alert");
-const btn = document.querySelector("#add");
-btn.addEventListener("click", func);
+let swiper = new Swiper(".mySwiper", {
+  slidesPerView: "auto",
+  // centeredSlides: true,
+  spaceBetween: 10,
+  pagination: {
+    // el: ".swiper-pagination",
+    clickable: true,
+  },
+});
+let swiper2 = new Swiper(".mySwiper2", {
+  slidesPerView: "auto",
+  // centeredSlides: true,
+  spaceBetween: 10,
+  pagination: {
+    // el: ".swiper-pagination",
+    clickable: true,
+  },
+});
 
+// today day
+let today = new Date();
+let day = today.getDate();
+console.log("today is ---> ", day);
 
-function func() {
-    // Define the request body data
-    const requestBody = {
-        // "addNotification": "addNotification",
-        // "userId": 1245,
-        // "eventId": 5,
-        "getProgram": "getProgram"
-        // "addNotification": "addNotification",
-        // "userId": 1,
-        // "eventId": 1
-    };
+const sliders = document.querySelectorAll(".swiper-slide");
+sliders.forEach((item)=>{
+  item.addEventListener("click", func);
+})
 
-    // Make the POST request
-    // fetch('https://jsonplaceholder.typicode.com/posts', {
-    fetch('https://white-june.f5-portal.ru/api.php', {
-        mode: 'no-cors',
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/x-www-form-urlencoded',
-        },
-        body: JSON.stringify(requestBody)
-        // body: "getProgram:getProgram"
-    })  .then(response => {
-        console.log(response);
-        return response;
-    })
-        .then(response => response.json())
-        .then(result => {
-            console.log('Ответ сервера:', result);
-            // Дальнейшая обработка ответа сервера
-        })
-        .catch(error => {
-            console.error('Ошибка при выполнении запроса:', error);
-            // Обработка ошибки
-        });
+function func(e) {
+  e.target.classList.toggle("active")
 }
 
-function createList(array) {
-    listWrapper.innerHTML = "";
-    array.forEach((item, i) => {
-        if (i < 10) {
-            let newLi = document.createElement("li");
-            newLi.innerHTML = `${item.title}`;
-            listWrapper.appendChild(newLi);
-        }
+const listMain = document.querySelector(".list");
+let eventsList = [];
+
+let myHeaders = new Headers();
+// myHeaders.append("Content-Type", "application/json");
+myHeaders.append("Content-Type", "text/plain");
+// myHeaders.append("Access-Control-Allow-Origin", "http://localhost:63342");
+// myHeaders.append('Access-Control-Allow-Credentials', 'true');
+
+let raw = JSON.stringify({
+  getProgram: "getProgram",
+});
+
+let requestOptions = {
+  method: "POST",
+  headers: myHeaders,
+  body: raw,
+  redirect: "follow",
+};
+
+fetch("https://white-june.f5-portal.ru/api.php", requestOptions)
+  .then((response) => response.text())
+  .then((result) => {
+    console.log(JSON.parse(result).result[0]);
+    eventsList = JSON.parse(result).result;
+    makeEvents(eventsList);
+  })
+  .catch((error) => console.log("error", error));
+
+function makeEvents(array) {
+  listMain.innerHTML = "";
+
+  array.forEach((item) => {
+    let eventInner = "";
+    item.events.forEach((item)=> {
+      eventInner += `<p>-->${item.description}</p>`
     })
+    let li = document.createElement("li");
+    li.innerHTML = `<h2>${item.title}</h2>`;
+    li.innerHTML += `<p>${item.place}</p>`;
+    li.innerHTML += eventInner;
+    listMain.appendChild(li);
+  });
 }
