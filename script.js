@@ -22,6 +22,13 @@ function getDay(number) {
   let date = new Date(number);
   return date.getDate();
 }
+
+function removePreTags(code) {
+  let pattern = /<pre>[\s\S]*?<\/pre>/g;
+  let cleanedCode = code.replace(pattern, '');
+  return cleanedCode;
+}
+
 // получить время
 function getTime(str) {
   const dateTimeParts = str.split(" ");
@@ -29,30 +36,45 @@ function getTime(str) {
   const hours = parseInt(timeParts[0]);
   const minutes = parseInt(timeParts[1]);
   const seconds = parseInt(timeParts[2]);
-  return (hours + ":" + minutes); // 14:48:0
+  return hours + ":" + minutes; // 14:48:0
 }
 
 function startAlarms() {
   const linksAlarm = document.querySelectorAll(".event__link");
-  linksAlarm.forEach((item)=> {
+  linksAlarm.forEach((item) => {
     item.addEventListener("click", func);
-  })
+  });
+
   function func(e) {
     console.log(e.target.getAttribute("data-event"));
     if (!e.target.classList.contains("no-active")) {
-      e.target.classList.add("no-active")
+      e.target.classList.add("no-active");
+      e.target.innerHTML = "Уведомление придет";
     }
   }
 }
-
-
 
 // запрос
 let rawGet = JSON.stringify({
   getProgram: "getProgram",
 });
 
+let rawAdd = JSON.stringify({
+  addNotification: "addNotification",
+  userId: 1,
+  eventId: 1,
+});
 
+let rawListA = JSON.stringify({
+  getNotification: "getNotification",
+  userId: 123,
+  timeFilter: [
+
+  ],
+  returnMsg: "N",
+});
+
+fetchToApi(rawListA);
 
 function fetchToApi(raw) {
   let myHeaders = new Headers();
@@ -71,15 +93,16 @@ function fetchToApi(raw) {
   fetch("https://white-june.f5-portal.ru/api.php", requestOptions)
     .then((response) => response.text())
     .then((result) => {
-      console.log(JSON.parse(result).result);
-      eventsList = JSON.parse(result).result;
-      makeEvents(eventsList, 30);
-      startAlarms();
+      // console.log(JSON.parse(result).result);
+      console.log(JSON.parse(removePreTags(result)).result);
+      // eventsList = JSON.parse(result).result;
+      // makeEvents(eventsList, 30);
+      // startAlarms();
     })
     .catch((error) => console.log("error", error));
 }
 
-fetchToApi(rawGet);
+// fetchToApi(rawGet);
 
 // global vars
 let dayToday = new Date().getDate();
@@ -101,7 +124,7 @@ let eventsList = [];
 
 function makeEvents(array, day = 30, event = "test") {
   listMain.innerHTML = `<h1 class="main-date container">${day} июня</h1>`;
-  let eventInner = ""
+  let eventInner = "";
 
   array.forEach((item) => {
     const dateDay = getDay(item.date);
@@ -110,7 +133,9 @@ function makeEvents(array, day = 30, event = "test") {
 
       // события
       item.events.forEach((item) => {
-        const timeString = `${getTime(item.date_start)}-${getTime(item.date_stop)}`
+        const timeString = `${getTime(item.date_start)}-${getTime(
+          item.date_stop
+        )}`;
         eventInner += `
             <div class="list-events__place container">
                 ${item.place}
@@ -131,3 +156,6 @@ function makeEvents(array, day = 30, event = "test") {
     }
   });
 }
+
+
+console.log(window.Telegram.WebApp)
